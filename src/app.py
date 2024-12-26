@@ -26,25 +26,24 @@ spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=client_id,
 
 # Get the artist's top tracks
 top_tracks = spotify.artist_top_tracks(artist_id, country='US')
-
-
-data = {'name': [], 'popularity': [], 'duration': []}
-
-for i, top_track in enumerate(top_tracks['tracks'][:10], 1):
-    data['name'].append(top_track['name'])
-    data['popularity'].append(top_track['popularity'])
-    data['duration'].append(top_track['duration_ms'] / 60000)
-    print(f"{i}. {top_track['name']}")
-
-df = pd.DataFrame(data)
+top_tracks = [ {'name': track['name'], 'popularity': track['popularity'], 'duration': track['duration_ms'] / 60000 } for track in top_tracks['tracks']]
 
 #   Step 6: Transform to Pandas DataFrame
-print(df[:3].sort_values(by='popularity', ascending=False))
+
+df = pd.DataFrame(top_tracks)
+df['duration'] = df['duration'].round(2)
+print(df.head(3).sort_values(by='popularity', ascending=False))
 
 # Step 7: Analyze statistical relationship
-
 plt.figure(figsize=(10, 6))
 plt.scatter(df['popularity'], df['duration'])
 plt.xlabel('Popularity')
 plt.ylabel('Duration (minutes)')
 plt.show()
+
+correlation = df['popularity'].corr(df['duration'])
+
+if correlation > 0.5:
+    print('There is a positive correlation between popularity and duration of the songs')
+else:
+    print('Don\'t exist a statistical relationship between popularity and duration of the songs')
